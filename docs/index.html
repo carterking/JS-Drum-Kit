@@ -1,97 +1,84 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
-<head></head>
+<head>
+  <meta charset="UTF-8">
+  <title>JS Drum Kit</title>
+  <link rel="stylesheet" href="style.css">
+</head>
 
 <body>
-    <!--
-    BEFORE RUNNING:
-    ---------------
-    1. If not already done, enable the Google Sheets API
-       and check the quota for your project at
-       https://console.developers.google.com/apis/api/sheets
-    2. Get access keys for your application. See
-       https://developers.google.com/api-client-library/javascript/start/start-js#get-access-keys-for-your-application
-    3. For additional information on authentication, see
-       https://developers.google.com/sheets/api/quickstart/js#step_2_set_up_the_sample
-    -->
-    <script>
-        function makeApiCall() {
-            var params = {
-                // The ID of the spreadsheet to retrieve data from.
-                spreadsheetId: '1R91wcXpHK9aCHN-N5S8snRMWXGVSDQP_Dxc6ShQv-4U', // TODO: Update placeholder value.
 
-                // The A1 notation of the values to retrieve.
-                range: 'A2:I2', // TODO: Update placeholder value.
 
-                // How values should be represented in the output.
-                // The default render option is ValueRenderOption.FORMATTED_VALUE.
-                valueRenderOption: 'FORMATTED_VALUE', // TODO: Update placeholder value.
+  <div class="keys">
+    <div data-key="65" class="key">
+      <kbd>A</kbd>
+      <span class="sound">clap</span>
+    </div>
+    <div data-key="83" class="key">
+      <kbd>S</kbd>
+      <span class="sound">hihat</span>
+    </div>
+    <div data-key="68" class="key">
+      <kbd>D</kbd>
+      <span class="sound">kick</span>
+    </div>
+    <div data-key="70" class="key">
+      <kbd>F</kbd>
+      <span class="sound">openhat</span>
+    </div>
+    <div data-key="71" class="key">
+      <kbd>G</kbd>
+      <span class="sound">boom</span>
+    </div>
+    <div data-key="72" class="key">
+      <kbd>H</kbd>
+      <span class="sound">ride</span>
+    </div>
+    <div data-key="74" class="key">
+      <kbd>J</kbd>
+      <span class="sound">snare</span>
+    </div>
+    <div data-key="75" class="key">
+      <kbd>K</kbd>
+      <span class="sound">tom</span>
+    </div>
+    <div data-key="76" class="key">
+      <kbd>L</kbd>
+      <span class="sound">tink</span>
+    </div>
+  </div>
 
-                // How dates, times, and durations should be represented in the output.
-                // This is ignored if value_render_option is
-                // FORMATTED_VALUE.
-                // The default dateTime render option is [DateTimeRenderOption.SERIAL_NUMBER].
-                dateTimeRenderOption: 'FORMATTED_STRING', // TODO: Update placeholder value.
-            };
-            var headerVal = document.getElementById("put-here");
-            var request = gapi.client.sheets.spreadsheets.values.get(params);
-            request.then(function (response) {
-                // TODO: Change code below to process the `response` object:
-                console.log(response.result);
-                headerVal.textContent = response.result.values.join(" ");
-            }, function (reason) {
-                console.error('error: ' + reason.result.error.message);
-            });
-        }
+  <audio data-key="65" src="sounds/clap.wav"></audio>
+  <audio data-key="83" src="sounds/hihat.wav"></audio>
+  <audio data-key="68" src="sounds/kick.wav"></audio>
+  <audio data-key="70" src="sounds/openhat.wav"></audio>
+  <audio data-key="71" src="sounds/boom.wav"></audio>
+  <audio data-key="72" src="sounds/ride.wav"></audio>
+  <audio data-key="74" src="sounds/snare.wav"></audio>
+  <audio data-key="75" src="sounds/tom.wav"></audio>
+  <audio data-key="76" src="sounds/tink.wav"></audio>
 
-        function initClient() {
-            var API_KEY = 'AIzaSyDlDeLSUqDZpD9KFAN8kUT0_Jg-o9m32K0'; // TODO: Update placeholder with desired API key.
+  <script>
+    window.addEventListener('keydown', function (e) {
+      const audio = document.querySelector(`audio[data-key="${e.keyCode}"]`);
+      const key = document.querySelector(`.key[data-key="${e.keyCode}"]`);
+      if (!audio) return; // stop the function from running all together
+      audio.currentTime = 0; // rewind to the start 
+      audio.play();
+      key.classList.add('playing');
+    });
 
-            var CLIENT_ID = '560924223714-0fp486rq19gdkd71rpcd9frfsern9os8.apps.googleusercontent.com'; // TODO: Update placeholder with desired client ID.
+    function removeTransition(e) {
+      if (e.propertyName !== 'transform') return; //skip it if it's not a transform event
+      this.classList.remove('playing');
+    }
 
-            // TODO: Authorize using one of the following scopes:
-            //   'https://www.googleapis.com/auth/drive'
-            //   'https://www.googleapis.com/auth/drive.file'
-            //   'https://www.googleapis.com/auth/drive.readonly'
-            //   'https://www.googleapis.com/auth/spreadsheets'
-            //   'https://www.googleapis.com/auth/spreadsheets.readonly'
-            var SCOPE = 'https://www.googleapis.com/auth/spreadsheets.readonly';
+    const keys = document.querySelectorAll('.key');
+    keys.forEach(key => key.addEventListener('transitionend', removeTransition));
+  </script>
 
-            gapi.client.init({
-                'apiKey': API_KEY,
-                'clientId': CLIENT_ID,
-                'scope': SCOPE,
-                'discoveryDocs': ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
-            }).then(function () {
-                gapi.auth2.getAuthInstance().isSignedIn.listen(updateSignInStatus);
-                updateSignInStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-            });
-        }
 
-        function handleClientLoad() {
-            gapi.load('client:auth2', initClient);
-        }
-
-        function updateSignInStatus(isSignedIn) {
-            if (isSignedIn) {
-                makeApiCall();
-            }
-        }
-
-        function handleSignInClick(event) {
-            gapi.auth2.getAuthInstance().signIn();
-        }
-
-        function handleSignOutClick(event) {
-            gapi.auth2.getAuthInstance().signOut();
-        }
-    </script>
-    <script async defer src="https://apis.google.com/js/api.js" onload="this.onload=function(){};handleClientLoad()"
-        onreadystatechange="if (this.readyState === 'complete') this.onload()">
-    </script>
-    <button id="signin-button" onclick="handleSignInClick()">Sign in</button>
-    <button id="signout-button" onclick="handleSignOutClick()">Sign out</button>
-    <h2 id="put-here"></h2>
 </body>
 
 </html>
